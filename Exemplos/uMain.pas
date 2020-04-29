@@ -107,9 +107,19 @@ begin
 end;
 
 procedure TForm2.Button1Click(Sender: TObject);
+var
+  GitStatus: String;
 begin
-  Memo1.Text := GetDosOutput('git status');
-  lblBranch.Caption := 'Branch Atual: ' + ExtractText(GetDosOutput('git status'), 'On branch ', 'Your');
+  GitStatus := GetDosOutput('git status');
+  lblBranch.Caption := 'Branch Atual: ' + ExtractText(GitStatus, 'On branch ', 'Your');
+  Memo1.Clear;
+  Memo1.Lines.Add('Arquivos Atualizados:');
+  Memo1.Lines.Add(ExtractText(GitStatus, 'modified:', 'no changes'));
+
+  if ContainsText(GitStatus, 'modified:') then
+    Memo1.Lines.Add('Tem Modificações');
+  if ContainsText(GitStatus, 'Untracked') then
+    Memo1.Lines.Add('Tem Novos Arquivos');
 end;
 
 
