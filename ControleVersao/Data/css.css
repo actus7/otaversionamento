@@ -1,0 +1,111 @@
+/*******************************************************************************
+ * CANAL INTERNET E COISAS                                                     *
+ * Controle de Versão - Multiplataforma ESP32 e ESP8266                        *
+ * Interface - Arquivo CSS                                                     *
+ * 04/2020 - Andre Michelon                                                    *
+ * andremichelon@internetecoisas.com.br                                        *
+ * https://internetecoisas.com.br                                              *
+ ******************************************************************************/
+
+body {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  color: #ffffff;
+  margin: 5px;
+  background: #d0d0d0;
+  min-width: 400px;
+  max-width: 600px;
+}
+h1 {
+  font-size: 22px;
+  text-align: left;
+  text-shadow: 2px 2px 2px black;
+  color: #ffffff;
+  background: #909090;
+  border: #909090 solid 2px;
+  border-radius: 7px 7px 0px 0px;
+  padding: 4px;
+  margin: 0px;
+}
+h2 {
+  font-size: 12px;
+  text-align: left;
+  color: rgb(227, 0, 14);
+  background: #909090;
+  padding: 4px 8px 4px 8px;
+  margin: 0px;
+  border: #909090 solid 2px;
+}
+h3 {
+  font-size: 12px;
+  text-align: left;
+  font-weight: normal;
+  background: #ffffff;
+  padding: 5px;
+  margin: 0px;
+  border: #909090 solid 2px;
+}
+h4 {
+  font-size: 10px;
+  text-align: center;
+  color: #ffffff;
+  background: #909090;
+  padding: 4px 8px 4px 8px;
+  margin: 0px;
+  border: #909090 solid 2px;
+  border-radius: 0px 0px 7px 7px;
+}
+table {
+  width: 100%;
+}
+th {
+  font-size: 14px;
+  padding: 5px;
+  border-radius: 3px 0px 0px 3px;
+  width: 20%;
+}
+th.d {
+  background: rgb(170, 236, 83);
+}
+th.a {
+  background: rgb(60, 153, 234);
+}
+th.n {
+  background: rgb(227, 0, 14);
+}
+th.s {
+  background: rgb(208, 208, 208);
+}
+td {
+  font-size: 12px;
+  background: #b0b0b0;
+  padding: 5px;
+  border-radius: 0px 3px 3px 0px;
+}
+td.t {
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 0px;
+  width: 20%;
+}
+td.t.d {
+  background: rgb(170, 236, 83);
+}
+td.t.a {
+  background: rgb(60, 153, 234);
+}
+td.t.n {
+  background: rgb(227, 0, 14);
+}
+a {
+  font-weight: bold;
+  color: #ffffff;
+}
+a:hover {
+  color: rgb(227, 0, 14);
+}
+img {
+  margin: 5px 15px;
+  vertical-align: middle;
+}

@@ -1,0 +1,10 @@
+{
+  "swVersion": "1.1",
+  "swMandatory": false,
+  "swRelease": "2020-04-19T16:00:00Z",
+  "swURL": "https://dl.dropboxusercontent.com/s/1lte2ij5mdabry4/IeC122-ControleVersao.ino.generic.bin",
+  "fsVersion": "1.1",
+  "fsMandatory": false,
+  "fsRelease": "2020-04-19T16:00:00Z",
+  "fsURL": "https://dl.dropboxusercontent.com/s/fu50eutxrjni5lu/IeC122-ControleVersao.spiffs.generic.bin"
+}

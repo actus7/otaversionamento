@@ -1,0 +1,57 @@
+<!--
+/*******************************************************************************
+ * CANAL INTERNET E COISAS                                                     *
+ * Controle de Versão - Multiplataforma ESP32 e ESP8266                        *
+ * Interface - Arquivo HTML                                                    *
+ * 04/2020 - Andre Michelon                                                    *
+ * andremichelon@internetecoisas.com.br                                        *
+ * https://internetecoisas.com.br                                              *
+ ******************************************************************************/
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no">
+  <title>Controle de Versão</title>
+  <link href="css.css" rel="stylesheet">
+  <script language="JavaScript">
+    var i = #time#;
+    function update() {
+      i--;
+      document.getElementById("seg").innerHTML = i;
+      if (i == 0) {
+        window.location = "/";
+      } else {
+        window.setTimeout("update()", 1000);
+      }
+    }
+  </script>
+</head>
+<body onLoad="update()">
+  <h1>
+    <a href="http://internetecoisas.com.br" target="_blank"><img src="IeCLogo.png" title="Internet e Coisas" width="70" height="70"></a>
+    Controle de Versão
+  </h1>
+  <h3>
+  <table>
+    <tr>
+      <th class="d" rowspan="2">Dispositivo</th>
+      <td class="d t">Software</td>
+      <td>#sw#</td>
+    </tr>
+    <tr>
+      <td class="d t">Plataforma</td>
+      <td>#hw#</td>
+    </tr>
+    <tr>
+      <th class="s" colspan="2">Atualizando Versão</th>
+      <td>
+        <b>#status#</b><br>
+        Por favor aguarde <span id="seg">#time#</span> segundos
+      </td>
+    </tr>
+  </table>
+  </h3>
+  <h4>© Abr/2020 - Internet e Coisas</h4>
+</body>
+</html>

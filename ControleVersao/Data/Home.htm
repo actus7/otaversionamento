@@ -1,0 +1,84 @@
+<!--
+/*******************************************************************************
+ * CANAL INTERNET E COISAS                                                     *
+ * Controle de Versão - Multiplataforma ESP32 e ESP8266                        *
+ * Interface - Arquivo HTML                                                    *
+ * 04/2020 - Andre Michelon                                                    *
+ * andremichelon@internetecoisas.com.br                                        *
+ * https://internetecoisas.com.br                                              *
+ ******************************************************************************/
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no">
+  <title>Controle de Versão</title>
+  <link href="css.css" rel="stylesheet">
+</head>
+<body onload="window.setTimeout(function(){window.location = '/';}, 5000)">
+  <h1>
+    <a href="http://internetecoisas.com.br" target="_blank"><img src="IeCLogo.png" title="Internet e Coisas" width="70" height="70"></a>
+    Controle de Versão
+  </h1>
+  <h3>
+  <table>
+    <tr>
+      <th class="d" rowspan="2">Dispositivo</th>
+      <td class="d t">Software</td>
+      <td>#sw#</td>
+    </tr>
+    <tr>
+      <td class="d t">Plataforma</td>
+      <td>#hw#</td>
+    </tr>
+    <tr>
+      <th class="a" rowspan="4">Atual</th>
+      <td class="a t" rowspan="2">Software</td>
+      <td>Versão: #curSWVersion#</td>
+    </tr>
+    <tr>
+      <td>Release: #curSWRelease#</td>
+    </tr>
+    <tr>
+      <td class="t a" rowspan="2">Interface</td>
+      <td>Versão: #curFSVersion#</td>
+    </tr>
+    <tr>
+      <td>Release: #curFSRelease#</td>
+    </tr>
+    <tr>
+      <th class="n" rowspan="8">Nova</th>
+      <td class="n t" rowspan="4">Software</td>
+      <td>Versão: #newSWVersion#</td>
+    </tr>
+    <tr>
+      <td>Release: #newSWRelease#</td>
+    </tr>
+    <tr>
+      <td>Obrigatória: #newSWMandatory#</td>
+    </tr>
+    <tr>
+      <td>URL: #newSWURL#</td>
+    </tr>
+    <tr>
+      <td class="n t" rowspan="4">Interace</td>
+      <td>Versão: #newFSVersion#</td>
+    </tr>
+    <tr>
+      <td>Release: #newFSRelease#</td>
+    </tr>
+    <tr>
+      <td>Obrigatória: #newFSMandatory#</td>
+    </tr>
+    <tr>
+      <td>URL: #newFSURL#</td>
+    </tr>
+    <tr>
+      <th class="s" colspan="2">Situação</th>
+      <td>#status#</td>
+    </tr>
+  </table>
+  </h3>
+  <h4>© Abr/2020 - Internet e Coisas</h4>
+</body>
+</html>
