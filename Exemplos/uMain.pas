@@ -111,10 +111,11 @@ var
   GitStatus: String;
 begin
   GitStatus := GetDosOutput('git status');
-  lblBranch.Caption := 'Branch Atual: ' + ExtractText(GitStatus, 'On branch ', 'Your');
+
+  {lblBranch.Caption := 'Branch Atual: ' + ExtractText(GitStatus, 'On branch ', 'Your');
   Memo1.Clear;
   Memo1.Lines.Add('Arquivos Atualizados:');
-  Memo1.Lines.Add(ExtractText(GitStatus, 'modified:', 'no changes'));
+  Memo1.Lines.Add(ExtractText(GitStatus, 'modified:', 'no changes')); }
 
   if ContainsText(GitStatus, 'modified:') then
     Memo1.Lines.Add('Tem Modificações');
