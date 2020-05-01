@@ -22,35 +22,48 @@
   #include <WebServer.h>
   #include <HTTPUpdate.h>
   #include <SPIFFS.h>
+  //#define FORMAT_SPIFFS_IF_FAILED true
 #endif
 #include <TimeLib.h>
 #include <ArduinoJson.h>
+
+/***********************************
+* AJUSTES PARA TRABALHO COM O GITHUB
+***********************************/
+const char* host = "api.github.com";
+const int httpsPort = 443;
 
 /*******************************************************************************
 * DEFINIÇÕES DE CONSTANTES
 *******************************************************************************/
 // Wi-Fi
-const char*       WIFI_SSID               = "home2.4";
-const char*       WIFI_PASSWORD           = "Home31415";
+const char*       WIFI_SSID               = "Narnia";
+const char*       WIFI_PASSWORD           = "!Wehschmitt2019!";
 
 // Intervalo verificação de versão
 // Sugestão a cada 6 horas (60 * 60 * 6)
 //const int       VCS_CHECK_INT           = 60 * 60 * 6;
-const int         VCS_CHECK_INT           = 10; // 10s apenas para teste
+const int         VCS_CHECK_INT           = 60 * 10; // 10 minutos apenas para teste
 
 // Controle de Versão
 #ifdef ARDUINO_ESP32_DEV
   // ESP32
-  const char*     VCS_SW_VERSION          = "1.0";
-  const char*     VCS_URL                 = "https://dl.dropboxusercontent.com/s/nea9ad5rz9xj6ym/vcs.esp32.txt";
+  const char*     VCS_SW_VERSION          = "0";
+  const char*     VCS_SWURL               = "/repos/actus7/otaversionamento/contents/ControleVersao/bin/ControleVersao.ino.esp32.bin?ref=master";
+  const char*     VCS_SWDTURL             = "/repos/actus7/otaversionamento/commits/master?path=ControleVersao/bin/ControleVersao.ino.esp32.bin";
+  
+  const char*     VCS_FSURL               = "/repos/actus7/otaversionamento/contents/ControleVersao/bin/ControleVersao.spiffs.esp32.bin?ref=master";
+  const char*     VCS_FSDTURL             = "/repos/actus7/otaversionamento/commits/master?path=ControleVersao/bin/ControleVersao.spiffs.esp32.bin";
 #elif defined ARDUINO_ESP8266_GENERIC
   // ESP8266 Genérico
-  const char*     VCS_SW_VERSION          = "1.0";
-  const char*     VCS_URL                 = "https://dl.dropboxusercontent.com/s/ai6qdpxgufw9qr5/vcs.generic.txt";
+  const char*     VCS_SW_VERSION          = "0";
+  const char*     VCS_SWURL               = "/repos/actus7/otaversionamento/contents/ControleVersao/bin/ControleVersao.ino.generic.bin?ref=master";
+  const char*     VCS_FSURL               = "/repos/actus7/otaversionamento/contents/ControleVersao/bin/ControleVersao.spiffs.generic.bin?ref=master";
 #elif defined ARDUINO_ESP8266_NODEMCU
   // ESP8266 NodeMCU
-  const char*     VCS_SW_VERSION          = "1.0";
-  const char*     VCS_URL                 = "https://dl.dropboxusercontent.com/s/nx2d4bnhov9vx00/vcs.nodemcu.txt";
+  const char*     VCS_SW_VERSION          = "0";
+  const char*     VCS_SWURL               = "/repos/actus7/otaversionamento/contents/ControleVersao/bin/ControleVersao.ino.nodemcu.bin?ref=master";
+  const char*     VCS_FSURL               = "/repos/actus7/otaversionamento/contents/ControleVersao/bin/ControleVersao.spiffs.nodemcu.bin?ref=master";
 #else
   #error Modelo de placa inválido
 #endif

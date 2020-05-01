@@ -1,10 +1,10 @@
 /*******************************************************************************
-* BIBLIOTECAS E ARQUIVOS AUXILIARES
+  BIBLIOTECAS E ARQUIVOS AUXILIARES
 *******************************************************************************/
-#include "IeC122-ControleVersaoDef.h"
+#include "ControleVersaoDef.h"
 
 /*******************************************************************************
-* FUNÇÕES
+  FUNÇÕES
 *******************************************************************************/
 String ipStr(const IPAddress &ip) {
   // Retorna IPAddress como "n.n.n.n"
@@ -29,8 +29,8 @@ time_t iso8601DateTime(String s, const int8_t tz = 0) {
   te.Minute = s.substring(14, 16).toInt();
   te.Second = s.substring(17, 19).toInt();
   time_t t  = makeTime(te);
-  t-= s.substring(19, 22).toInt() * 3600; // Adjusta para UTC;
-  t+= tz * 3600;                          // Adjusta para hora local
+  t -= s.substring(19, 22).toInt() * 3600; // Adjusta para UTC;
+  t += tz * 3600;                         // Adjusta para hora local
   return t;
 }
 
@@ -128,25 +128,25 @@ time_t timeNTP() {
 }
 
 /*******************************************************************************
-* FUNÇÕES DE VERSÃO
+  FUNÇÕES DE VERSÃO
 *******************************************************************************/
 String platform() {
   // Obtem a plataforma de hardware
-  #ifdef ARDUINO_ESP32_DEV
-    // ESP32
-    return "esp32";
-  #elif defined ARDUINO_ESP8266_GENERIC
-    // ESP8266 Genérico
-    return "esp8266";
-  #elif defined ARDUINO_ESP8266_NODEMCU
-    // ESP8266 NodeMCU
-    return "nodemcu";
-  #elif defined ARDUINO_ESP8266_ESP01
-    // ESP8285
-    return "esp8285";
-  #else
-    #error Modelo de placa inválido
-  #endif
+#ifdef ARDUINO_ESP32_DEV
+  // ESP32
+  return "esp32";
+#elif defined ARDUINO_ESP8266_GENERIC
+  // ESP8266 Genérico
+  return "esp8266";
+#elif defined ARDUINO_ESP8266_NODEMCU
+  // ESP8266 NodeMCU
+  return "nodemcu";
+#elif defined ARDUINO_ESP8266_ESP01
+  // ESP8285
+  return "esp8285";
+#else
+#error Modelo de placa inválido
+#endif
 }
 
 String swCurrentVersion() {
@@ -202,83 +202,207 @@ void vcsCheck() {
     return;
   }
 
-  log(F("Verificando versão..."));
-  log(VCS_URL);
-
-  // Obtém arquivo de versão
-  WiFiClientSecure client;
-  #ifdef ESP8266
-    // ESP8266
-    client.setInsecure();
-  #endif
-  HTTPClient http;
-  http.begin(client, VCS_URL);
-  int httpCode = http.GET();
-  String s = http.getString();
-  http.end();
-  s.trim();
-
   // Atualiza data/hora da próxima verificação
   vcsNextCheck = now() + VCS_CHECK_INT;
 
-  if (httpCode != HTTP_CODE_OK) {
-    // Erro obtendo arquivo de versão
-    log("ERRO HTTP " + String(httpCode) +
-        " " + http.errorToString(httpCode));
+  WiFiClientSecure client;
+#ifdef ESP8266
+  // ESP8266
+  client.setInsecure();
+#endif
+  Serial.print("Conectando em: ");
+  Serial.println(host);
+
+  if (!client.connect(host, httpsPort)) {
+    Serial.println("Falha na conexao");
     return;
   }
 
-  // Tratamento do arquivo
-  StaticJsonDocument<JSON_SIZE> jsonVCS;
+  log(F("Verificando versão SW..."));
+  log(VCS_SWURL);
+  client.print(String("GET ") + VCS_SWURL + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "User-Agent: BuscaVersionamentoBinario\r\n" + "Connection: close\r\n\r\n");
 
-  if (deserializeJson(jsonVCS, s)) {
-    // Arquivo de versão inválido
-    log(F("Arquivo de versão inválido"));
-    return;
+  Serial.println("Requisita conexao");
+  while (client.connected()) {
+    String line = client.readStringUntil('\n');
+    if (line == "\r") {
+      Serial.println("Recebe Cabecalho");
+      break;
+    }
   }
 
-  // Armazena dados na estrutura VCS
-  char release[21];
-  strlcpy(vcs.swVersion,  jsonVCS["swVersion"]    | "", sizeof(vcs.swVersion)); 
-  vcs.swMandatory =       jsonVCS["swMandatory"]  | false;
-  strlcpy(release,        jsonVCS["swRelease"]    | "", sizeof(release));
-  vcs.swRelease   =       iso8601DateTime(release);
-  strlcpy(vcs.swURL,      jsonVCS["swURL"]        | "", sizeof(vcs.swURL)); 
+  String line = client.readStringUntil('\n');
+  line = client.readStringUntil('\n');
+  if (line.startsWith("{\"name\":\"ControleVersao.ino")) {
+    Serial.println("Sucesso na leitura da versão do SW!");
 
-  strlcpy(vcs.fsVersion,  jsonVCS["fsVersion"]    | "", sizeof(vcs.fsVersion)); 
-  vcs.fsMandatory =       jsonVCS["fsMandatory"]  | false;
-  strlcpy(release,        jsonVCS["fsRelease"]    | "", sizeof(release));
-  vcs.fsRelease   =       iso8601DateTime(release);
-  strlcpy(vcs.fsURL,      jsonVCS["fsURL"]        | "", sizeof(vcs.fsURL)); 
+    // Tratamento do arquivo
+    const char* json = line.c_str();
+    StaticJsonDocument<800> jsonSWVCS;
+    deserializeJson(jsonSWVCS, json);
 
-  log(F("Dados recebidos:"));
-  serializeJsonPretty(jsonVCS, Serial);
-  Serial.println();
+    // Armazena dados na estrutura SWVCS
+    strlcpy(vcs.swVersion, jsonSWVCS["sha"]          | "", sizeof(vcs.swVersion));
+    vcs.swMandatory =      jsonSWVCS["swMandatory"]  | true;
+    strlcpy(vcs.swURL,     jsonSWVCS["download_url"] | "", sizeof(vcs.swURL));
+
+    log(F("Dados recebidos:"));
+    serializeJsonPretty(jsonSWVCS, Serial);
+    Serial.println();
+  } else {
+    Serial.println("Falha na leitura da versão do SW");
+    return;
+  }
+  client.stop();
+
+  log(F("Verificando data do SW..."));
+  log(VCS_SWDTURL);
+
+  for (int i = 0; i < 500; i++) {
+    delay(10);
+    if (WiFi.status() == WL_CONNECTED) {
+      if (client.connect(host, httpsPort) == true) {
+
+        client.print(String("GET ") + VCS_SWDTURL + " HTTP/1.1\r\n" +
+                     "Host: " + host + "\r\n" +
+                     "User-Agent: BuscaVersionamentoBinario\r\n" +
+                     "Connection: close\r\n\r\n");
+
+        unsigned long timeout = millis();
+        while (client.available() == 0) {
+          if (millis() - timeout > 5000) {
+            Serial.println(">>> Client Timeout !");
+            client.stop();
+            return;
+          }
+        }
+
+        while (client.available()) {
+          String line = client.readStringUntil('\n');
+          if (line == "\r") {
+            Serial.println("Recebe Cabecalho");
+            break;
+          }
+        }
+
+        Serial.println("Buscando dados");
+        while (client.available()) {
+          String line = client.readStringUntil('\n');
+          if (line.startsWith("{\"sha\"")) {
+            Serial.println(line);
+
+            // Tratamento do arquivo
+            const char* json = line.c_str();
+            StaticJsonDocument<400> jsonFSVCS;
+            deserializeJson(jsonFSVCS, json);
+
+            const char* date = jsonFSVCS["commit"]["author"]["date"];
+            vcs.swRelease   =      iso8601DateTime(date);
+
+            log(F("Dados recebidos:"));
+            serializeJsonPretty(jsonFSVCS, Serial);
+            Serial.println();
+
+            break;
+          }
+        }
+
+        Serial.println();
+        Serial.println("closing connection");
+        client.stop();
+      }
+      break;//Encerra o loop FOR()
+    }
+  }
+
+  log(F("Verificando versão FS..."));
+  log(VCS_FSURL);
+  for (int i = 0; i < 500; i++) {
+    delay(10);
+    if (WiFi.status() == WL_CONNECTED) {
+      if (client.connect(host, httpsPort) == true) {
+
+        client.print(String("GET ") + VCS_FSURL + " HTTP/1.1\r\n" +
+                     "Host: " + host + "\r\n" +
+                     "User-Agent: BuscaVersionamentoBinario\r\n" +
+                     "Connection: close\r\n\r\n");
+
+        unsigned long timeout = millis();
+        while (client.available() == 0) {
+          if (millis() - timeout > 5000) {
+            Serial.println(">>> Client Timeout !");
+            client.stop();
+            return;
+          }
+        }
+
+        while (client.available()) {
+          String line = client.readStringUntil('\n');
+          if (line == "\r") {
+            Serial.println("Recebe Cabecalho");
+            break;
+          }
+        }
+
+        Serial.println("Buscando dados");
+        while (client.available()) {
+          String line = client.readStringUntil('\n');
+          if (line.startsWith("{\"name\":\"ControleVersao.spiffs")) {
+            Serial.println(line);
+
+            // Tratamento do arquivo
+            const char* json = line.c_str();
+            StaticJsonDocument<800> jsonFSVCS;
+            deserializeJson(jsonFSVCS, json);
+
+            // Armazena dados na estrutura FSVCS
+            char release[21];
+            strlcpy(vcs.fsVersion, jsonFSVCS["fsVersion"]    | "", sizeof(vcs.fsVersion));
+            vcs.fsMandatory =      jsonFSVCS["fsMandatory"]  | false;
+            strlcpy(release,       jsonFSVCS["fsRelease"]    | "", sizeof(release));
+            vcs.fsRelease   =      iso8601DateTime(release);
+            strlcpy(vcs.fsURL,     jsonFSVCS["fsURL"]        | "", sizeof(vcs.fsURL));
+
+            log(F("Dados recebidos:"));
+            serializeJsonPretty(jsonFSVCS, Serial);
+            Serial.println();
+
+            break;
+          }
+        }
+
+        Serial.println();
+        Serial.println("closing connection");
+        client.stop();
+      }
+      break;//Encerra o loop FOR()
+    }
+  }
 }
 
 void vcsUpdate() {
   // Efetua o processo de atualizaçao do Sofwtare e Sistema de Arquivos
   WiFiClientSecure client;
-  #ifdef ESP8266
-    // ESP8266
-    client.setInsecure();
-    ESPhttpUpdate.rebootOnUpdate(false);
+#ifdef ESP8266
+  // ESP8266
+  client.setInsecure();
+  ESPhttpUpdate.rebootOnUpdate(false);
 
-    // Callback - Progresso
-    ESPhttpUpdate.onProgress([](size_t progresso, size_t total) {
-      Serial.print(progresso * 100 / total);
-      Serial.print(" ");
-    });
-  #else
-    // ESP32
-    httpUpdate.rebootOnUpdate(false);
+  // Callback - Progresso
+  ESPhttpUpdate.onProgress([](size_t progresso, size_t total) {
+    Serial.print(progresso * 100 / total);
+    Serial.print(" ");
+  });
+#else
+  // ESP32
+  httpUpdate.rebootOnUpdate(false);
 
-    // Callback - Progresso
-    Update.onProgress([](size_t progresso, size_t total) {
-      Serial.print(progresso * 100 / total);
-      Serial.print(" ");
-    });
-  #endif
+  // Callback - Progresso
+  Update.onProgress([](size_t progresso, size_t total) {
+    Serial.print(progresso * 100 / total);
+    Serial.print(" ");
+  });
+#endif
 
   if (fsCurrentVersion() != vcs.fsVersion) {
     // Atualiza Sistema de Arquivos
@@ -286,32 +410,32 @@ void vcsUpdate() {
     log(vcs.fsURL);
     SPIFFS.end();
 
-    #ifdef ESP8266
-      // ESP8266
-      t_httpUpdate_return r = ESPhttpUpdate.updateSpiffs(client, vcs.fsURL);
-    #else
-      // ESP32
-      t_httpUpdate_return r = httpUpdate.updateSpiffs(client, vcs.fsURL);
-    #endif
-  
+#ifdef ESP8266
+    // ESP8266
+    t_httpUpdate_return r = ESPhttpUpdate.updateSpiffs(client, vcs.fsURL);
+#else
+    // ESP32
+    t_httpUpdate_return r = httpUpdate.updateSpiffs(client, vcs.fsURL);
+#endif
+
     // Verifica resultado
     switch (r) {
       case HTTP_UPDATE_FAILED: {
-        #ifdef ESP8266
+#ifdef ESP8266
           // ESP8266
           String s = ESPhttpUpdate.getLastErrorString();
-        #else
+#else
           // ESP32
           String s = httpUpdate.getLastErrorString();
-        #endif
-        log("Falha: " + s);
-      } break;
+#endif
+          log("Falha: " + s);
+        } break;
       case HTTP_UPDATE_NO_UPDATES: {
-        log(F("Nenhuma atualização disponível"));
-      } break;
+          log(F("Nenhuma atualização disponível"));
+        } break;
       case HTTP_UPDATE_OK: {
-        log("Atualizado");
-      } break;
+          log("Atualizado");
+        } break;
     }
 
     yield();
@@ -324,34 +448,34 @@ void vcsUpdate() {
     log(F("Atualizando Software..."));
     log(vcs.swURL);
 
-    #ifdef ESP8266
-      // ESP8266
-      t_httpUpdate_return r = ESPhttpUpdate.update(client, vcs.swURL);
-    #else
-      // ESP32
-      t_httpUpdate_return r = httpUpdate.update(client, vcs.swURL);
-    #endif
-    
+#ifdef ESP8266
+    // ESP8266
+    t_httpUpdate_return r = ESPhttpUpdate.update(client, vcs.swURL);
+#else
+    // ESP32
+    t_httpUpdate_return r = httpUpdate.update(client, vcs.swURL);
+#endif
+
     // Verifica resultado
     switch (r) {
       case HTTP_UPDATE_FAILED: {
-        #ifdef ESP8266
+#ifdef ESP8266
           // ESP8266
           String s = ESPhttpUpdate.getLastErrorString();
-        #else
+#else
           // ESP32
           String s = httpUpdate.getLastErrorString();
-        #endif
-        log("Falha: " + s);
-      } break;
+#endif
+          log("Falha: " + s);
+        } break;
       case HTTP_UPDATE_NO_UPDATES:
         log("Nenhuma atualização disponível");
         break;
       case HTTP_UPDATE_OK: {
-        log("Atualizado, reiniciando...");
-        hold(500);
-        ESP.restart();
-      } break;
+          log("Atualizado, reiniciando...");
+          hold(500);
+          ESP.restart();
+        } break;
     }
   }
 }

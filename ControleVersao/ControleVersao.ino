@@ -10,7 +10,7 @@
 /*******************************************************************************
 * ARQUIVOS AUXILIARES
 *******************************************************************************/
-#include "IeC122-ControleVersaoLib.h"
+#include "ControleVersaoLib.h"
 
 /*******************************************************************************
 * FUNCÕES AUXILIARES
@@ -45,6 +45,7 @@ void handleHome() {
     s.replace(F("#newSWRelease#")   , dateTimeStr(vcs.swRelease, TIMEZONE));
     s.replace(F("#newSWMandatory#") , vcs.swMandatory ? "Sim" : "Não");
     s.replace(F("#newSWURL#")       , vcs.swURL);
+    
     s.replace(F("#newFSVersion#")   , vcs.fsVersion);
     s.replace(F("#newFSRelease#")   , dateTimeStr(vcs.fsRelease, TIMEZONE));
     s.replace(F("#newFSMandatory#") , vcs.fsMandatory ? "Sim" : "Não");
