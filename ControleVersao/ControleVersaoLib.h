@@ -289,7 +289,7 @@ void vcsCheck() {
         while (client.available()) {
           String line = client.readStringUntil('\n');
           if (line.startsWith("{\"sha\"")) {
-            Serial.println(line);
+            //Serial.println(line);
 
             // Tratamento do arquivo
             const char* json = line.c_str();
@@ -348,7 +348,7 @@ void vcsCheck() {
         while (client.available()) {
           String line = client.readStringUntil('\n');
           if (line.startsWith("{\"name\":\"ControleVersao.spiffs")) {
-            Serial.println(line);
+            //Serial.println(line);
 
             // Tratamento do arquivo
             const char* json = line.c_str();
@@ -356,12 +356,68 @@ void vcsCheck() {
             deserializeJson(jsonFSVCS, json);
 
             // Armazena dados na estrutura FSVCS
-            char release[21];
-            strlcpy(vcs.fsVersion, jsonFSVCS["fsVersion"]    | "", sizeof(vcs.fsVersion));
-            vcs.fsMandatory =      jsonFSVCS["fsMandatory"]  | false;
-            strlcpy(release,       jsonFSVCS["fsRelease"]    | "", sizeof(release));
-            vcs.fsRelease   =      iso8601DateTime(release);
-            strlcpy(vcs.fsURL,     jsonFSVCS["fsURL"]        | "", sizeof(vcs.fsURL));
+            strlcpy(vcs.fsVersion, jsonFSVCS["sha"]    | "", sizeof(vcs.fsVersion));
+            vcs.fsMandatory =      jsonFSVCS["fsMandatory"]  | true;
+            strlcpy(vcs.fsURL,     jsonFSVCS["download_url"]        | "", sizeof(vcs.fsURL));
+
+            log(F("Dados recebidos:"));
+            serializeJsonPretty(jsonFSVCS, Serial);
+            Serial.println();
+
+            break;
+          }
+        }
+
+        Serial.println();
+        Serial.println("closing connection");
+        client.stop();
+      }
+      break;//Encerra o loop FOR()
+    }
+  }
+
+  log(F("Verificando data do FS..."));
+  log(VCS_FSDTURL);
+  for (int i = 0; i < 500; i++) {
+    delay(10);
+    if (WiFi.status() == WL_CONNECTED) {
+      if (client.connect(host, httpsPort) == true) {
+
+        client.print(String("GET ") + VCS_FSDTURL + " HTTP/1.1\r\n" +
+                     "Host: " + host + "\r\n" +
+                     "User-Agent: BuscaVersionamentoBinario\r\n" +
+                     "Connection: close\r\n\r\n");
+
+        unsigned long timeout = millis();
+        while (client.available() == 0) {
+          if (millis() - timeout > 5000) {
+            Serial.println(">>> Client Timeout !");
+            client.stop();
+            return;
+          }
+        }
+
+        while (client.available()) {
+          String line = client.readStringUntil('\n');
+          if (line == "\r") {
+            Serial.println("Recebe Cabecalho");
+            break;
+          }
+        }
+
+        Serial.println("Buscando dados");
+        while (client.available()) {
+          String line = client.readStringUntil('\n');
+          if (line.startsWith("{\"sha\"")) {
+            //Serial.println(line);
+
+            // Tratamento do arquivo
+            const char* json = line.c_str();
+            StaticJsonDocument<400> jsonFSVCS;
+            deserializeJson(jsonFSVCS, json);
+
+            const char* date = jsonFSVCS["commit"]["author"]["date"];
+            vcs.fsRelease   =      iso8601DateTime(date);
 
             log(F("Dados recebidos:"));
             serializeJsonPretty(jsonFSVCS, Serial);
